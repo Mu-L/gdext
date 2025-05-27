@@ -288,7 +288,6 @@ fn make_named_method_table(info: NamedMethodTable) -> TokenStream {
 
             // TODO: Figure out the right safety preconditions. This currently does not have any because incomplete safety docs
             // can cause issues with people assuming they are sufficient.
-            #[allow(clippy::missing_safety_doc)]
             pub unsafe fn load(
                 #ctor_parameters
             ) -> Self {
@@ -388,7 +387,6 @@ fn make_method_table(info: IndexedMethodTable) -> TokenStream {
 
             // TODO: Figure out the right safety preconditions. This currently does not have any because incomplete safety docs
             // can cause issues with people assuming they are sufficient.
-            #[allow(clippy::missing_safety_doc)]
             #unused_attr
             pub unsafe fn load(
                 #ctor_parameters
@@ -463,7 +461,6 @@ fn make_method_table(info: IndexedMethodTable) -> TokenStream {
 
             // TODO: Figure out the right safety preconditions. This currently does not have any because incomplete safety docs
             // can cause issues with people assuming they are sufficient.
-            #[allow(clippy::missing_safety_doc)]
             #unused_attr
             pub unsafe fn load() -> Self {
                 // SAFETY: interface and lifecycle tables are initialized at this point, so we can get 'static references to them.
