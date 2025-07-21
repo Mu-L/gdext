@@ -115,8 +115,12 @@ impl<T: GodotClass> StorageRefCounted for InstanceStorage<T> {
             //super::log_surplus_ref(self);
             eprintln!("! ! ! SURPLUS REF");
             self.has_surplus_ref.set(false);
+            self.base.surplus_dec_ref();
             return;
         }
+
+        let refc = self.godot_ref_count.get() + 1;
+        self.godot_ref_count.set(refc);
 
         super::log_inc_ref(self);
     }
