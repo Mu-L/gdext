@@ -160,6 +160,7 @@ impl<T: GodotClass> Base<T> {
         (*self.obj).clone()
     }
 
+    /*
     /// Returns a [`Gd`] referencing the base object, for use during initialization.
     ///
     /// This method provides safe access to the base object during [`I*::init()`][crate::classes::IObject::init] or [`Gd::from_init_fn()`]
@@ -199,12 +200,13 @@ impl<T: GodotClass> Base<T> {
 
         &mut self.obj
     }
+    */
 
     pub fn to_init_gd(&self) -> Gd<T> {
         #[cfg(debug_assertions)]
         assert!(
             self.is_initializing(),
-            "Base::as_init_gd() can only be called during object initialization, inside I*::init() or Gd::from_init_fn()"
+            "Base::to_init_gd() can only be called during object initialization, inside I*::init() or Gd::from_init_fn()"
         );
 
         // let keeper = (*self.obj).clone();

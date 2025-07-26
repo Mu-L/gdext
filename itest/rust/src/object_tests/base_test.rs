@@ -112,9 +112,9 @@ fn base_with_init() {
 fn base_during_init() {
     let obj = Gd::<Based>::from_init_fn(|mut base| {
         // Test both temporary + local-variable syntax.
-        base.as_init_gd().set_rotation(22.0);
+        base.to_init_gd().set_rotation(22.0);
 
-        let gd = base.as_init_gd();
+        let mut gd = base.to_init_gd();
         gd.set_position(Vector2::new(100.0, 200.0));
 
         Based { base, i: 456 }
@@ -135,7 +135,7 @@ fn base_during_init_extracted_gd() {
     let mut extractor = None;
 
     let obj = Gd::<Based>::from_init_fn(|mut base| {
-        extractor = Some(base.as_init_gd().clone());
+        extractor = Some(base.to_init_gd());
 
         Based { base, i: 456 }
     });
@@ -159,7 +159,7 @@ fn base_during_init_freed_gd() {
 
     expect_panic("base object is destroyed", || {
         let _obj = Gd::<Based>::from_init_fn(|mut base| {
-            let obj = base.as_init_gd().clone();
+            let obj = base.to_init_gd();
             obj.free(); // Causes the problem, but doesn't panic yet.
             free_executed = true;
 
@@ -195,7 +195,7 @@ fn base_during_init_refcounted_simple() {
 fn base_during_init_refcounted_from_engine() {
     let db = ClassDb::singleton();
     let obj = db.instantiate("RefcBased").to::<Gd<RefcBased>>();
-    
+
     assert_eq!(
         obj.get_reference_count(),
         1,
@@ -213,6 +213,7 @@ fn base_during_init_refcounted_from_rust() {
     );
 }
 
+// #[itest(focus)]
 #[itest]
 fn base_during_init_refcounted_complex() {
     // Instantiate with multiple Gd<T> references.
@@ -244,7 +245,7 @@ fn base_during_init_outside_init() {
 
     expect_panic("as_init_gd() outside init() function", || {
         let mut guard = obj.bind_mut();
-        let _gd = guard.base.as_init_gd(); // Panics in Debug builds.
+        let _gd = guard.base.to_init_gd(); // Panics in Debug builds.
     });
 
     obj.free();
@@ -481,9 +482,9 @@ impl RefcBased {
 
             drop(gd);
 
-            let refc: &mut Gd<RefCounted> = base.as_init_gd();
-            let refc = refc.get_reference_count();
-            println!("Inside init(): refc={}", refc);
+            // let refc: &mut Gd<RefCounted> = base.as_init_gd();
+            // let refc = refc.get_reference_count();
+            // println!("Inside init(): refc={}", refc);
             Self { base }
         });
 
