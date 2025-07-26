@@ -5,7 +5,7 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
-use std::sync::atomic::{AtomicBool, AtomicU32, Ordering};
+use std::sync::atomic::{AtomicBool, Ordering};
 
 #[cfg(not(feature = "experimental-threads"))]
 use godot_cell::panicking::{GdCell, InaccessibleGuard, MutGuard, RefGuard};
@@ -22,7 +22,6 @@ pub struct InstanceStorage<T: GodotClass> {
 
     // Declared after `user_instance`, is dropped last
     pub(super) lifecycle: AtomicLifecycle,
-    godot_ref_count: AtomicU32,
     has_surplus_ref: AtomicBool,
 
     // No-op in Release mode.
@@ -50,7 +49,6 @@ unsafe impl<T: GodotClass> Storage for InstanceStorage<T> {
             user_instance: GdCell::new(user_instance),
             base,
             lifecycle: AtomicLifecycle::new(Lifecycle::Alive),
-            godot_ref_count: AtomicU32::new(1),
             has_surplus_ref: AtomicBool::new(false),
             borrow_tracker: DebugBorrowTracker::new(),
         }
