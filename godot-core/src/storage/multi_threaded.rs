@@ -5,7 +5,7 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
-use std::sync::atomic::{AtomicU32, Ordering};
+use std::sync::atomic::AtomicBool;
 
 #[cfg(not(feature = "experimental-threads"))]
 use godot_cell::panicking::{GdCell, InaccessibleGuard, MutGuard, RefGuard};
@@ -22,7 +22,7 @@ pub struct InstanceStorage<T: GodotClass> {
 
     // Declared after `user_instance`, is dropped last
     pub(super) lifecycle: AtomicLifecycle,
-    godot_ref_count: AtomicU32,
+    has_surplus_ref: AtomicBool,
 
     // No-op in Release mode.
     borrow_tracker: DebugBorrowTracker,
@@ -49,7 +49,7 @@ unsafe impl<T: GodotClass> Storage for InstanceStorage<T> {
             user_instance: GdCell::new(user_instance),
             base,
             lifecycle: AtomicLifecycle::new(Lifecycle::Alive),
-            godot_ref_count: AtomicU32::new(1),
+            has_surplus_ref: AtomicBool::new(false),
             borrow_tracker: DebugBorrowTracker::new(),
         }
     }
@@ -104,19 +104,11 @@ unsafe impl<T: GodotClass> Storage for InstanceStorage<T> {
 }
 
 impl<T: GodotClass> StorageRefCounted for InstanceStorage<T> {
-    fn godot_ref_count(&self) -> u32 {
-        self.godot_ref_count.load(Ordering::Relaxed)
-    }
-
     fn on_inc_ref(&self) {
-        self.godot_ref_count.fetch_add(1, Ordering::Relaxed);
-
         super::log_inc_ref(self);
     }
 
     fn on_dec_ref(&self) {
-        self.godot_ref_count.fetch_sub(1, Ordering::Relaxed);
-
         super::log_dec_ref(self);
     }
 }
