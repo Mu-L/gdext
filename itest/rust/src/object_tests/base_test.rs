@@ -191,39 +191,30 @@ fn base_during_init_refcounted_simple() {
 }
 
 // Tests that the auto-decrement of surplus references also works when instantiated through the engine.
-#[itest(focus)]
+#[itest]
 fn base_during_init_refcounted_from_engine() {
     let db = ClassDb::singleton();
-    let obj = db.instantiate("RefcBased");
-
-    // let mut last = Gd::<RefCounted>::from_instance_id(InstanceId::from_i64(-9223372001555511512));
-    // last.call("unreference", &[]);
+    let obj = db.instantiate("RefcBased").to::<Gd<RefcBased>>();
+    
+    assert_eq!(
+        obj.get_reference_count(),
+        1,
+        "no lingering references (engine init)"
+    );
 }
 
-// #[itest(focus)]
 #[itest]
-fn base_during_init_refcounted() {
+fn base_during_init_refcounted_from_rust() {
     let obj = RefcBased::new_gd();
-
-    println!("After construction: refc={}", obj.get_reference_count());
-    // obj.call("unreference", &[]);
-    //
-    // println!("After dec-ref: refc={}", obj.get_reference_count());
+    assert_eq!(
+        obj.get_reference_count(),
+        1,
+        "no lingering references (Rust init)"
+    );
 }
 
-// #[itest(focus)]
-// fn refcounted_drop() {
-//     let a = RefCounted::new_gd();
-//     let b = a.clone();
-//     a.clone();
-//     let c = b.clone();
-//     drop(b);
-//
-//     assert_eq!(a.get_reference_count(), 2);
-// }
-
 #[itest]
-fn base_during_init_refcounted_2() {
+fn base_during_init_refcounted_complex() {
     // Instantiate with multiple Gd<T> references.
     let (obj, mut base) = RefcBased::with_split();
     let id = obj.instance_id();
@@ -232,7 +223,7 @@ fn base_during_init_refcounted_2() {
     dbg!(base.instance_id().to_i64() as u64);
 
     // base.call("unreference", &[]);
-    base.call("unreference", &[]);
+    // base.call("unreference", &[]);
 
     assert_eq!(obj.instance_id(), base.instance_id());
     assert_eq!(base.get_reference_count(), 2);
