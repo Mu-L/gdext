@@ -5,8 +5,8 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
-use godot::classes::ClassDb;
 use crate::framework::{expect_panic, itest};
+use godot::classes::ClassDb;
 use godot::prelude::*;
 
 #[itest(skip)]

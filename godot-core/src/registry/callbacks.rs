@@ -33,9 +33,11 @@ pub unsafe extern "C" fn create<T: cap::GodotDefault>(
     _class_userdata: *mut std::ffi::c_void,
     _notify_postinitialize: sys::GDExtensionBool,
 ) -> sys::GDExtensionObjectPtr {
-    create_custom(T::__godot_user_init)
+    let ptr = create_custom(T::__godot_user_init)
         .map(|(ptr, _skip_inc_ref)| ptr)
-        .unwrap_or(std::ptr::null_mut())
+        .unwrap_or(std::ptr::null_mut());
+
+    ptr
 }
 
 #[cfg(before_api = "4.4")]
@@ -323,11 +325,15 @@ pub unsafe extern "C" fn set_property<T: cap::GodotSet>(
 }
 
 pub unsafe extern "C" fn reference<T: GodotClass>(instance: sys::GDExtensionClassInstancePtr) {
+    eprintln!("### REFERENCE: {t}", t = sys::short_type_name::<T>());
+
     let storage = as_storage::<T>(instance);
     storage.on_inc_ref();
 }
 
 pub unsafe extern "C" fn unreference<T: GodotClass>(instance: sys::GDExtensionClassInstancePtr) {
+    eprintln!("### UNREFERENCE: {t}", t = sys::short_type_name::<T>());
+
     let storage = as_storage::<T>(instance);
     storage.on_dec_ref();
 }
