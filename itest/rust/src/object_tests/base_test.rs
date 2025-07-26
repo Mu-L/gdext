@@ -110,7 +110,7 @@ fn base_with_init() {
 
 #[itest]
 fn base_during_init() {
-    let obj = Gd::<Based>::from_init_fn(|mut base| {
+    let obj = Gd::<Based>::from_init_fn(|base| {
         // Test both temporary + local-variable syntax.
         base.to_init_gd().set_rotation(22.0);
 
@@ -134,7 +134,7 @@ fn base_during_init() {
 fn base_during_init_extracted_gd() {
     let mut extractor = None;
 
-    let obj = Gd::<Based>::from_init_fn(|mut base| {
+    let obj = Gd::<Based>::from_init_fn(|base| {
         extractor = Some(base.to_init_gd());
 
         Based { base, i: 456 }
@@ -158,7 +158,7 @@ fn base_during_init_freed_gd() {
     let mut free_executed = false;
 
     expect_panic("base object is destroyed", || {
-        let _obj = Gd::<Based>::from_init_fn(|mut base| {
+        let _obj = Gd::<Based>::from_init_fn(|base| {
             let obj = base.to_init_gd();
             obj.free(); // Causes the problem, but doesn't panic yet.
             free_executed = true;
@@ -217,7 +217,7 @@ fn base_during_init_refcounted_from_rust() {
 #[itest]
 fn base_during_init_refcounted_complex() {
     // Instantiate with multiple Gd<T> references.
-    let (obj, mut base) = RefcBased::with_split();
+    let (obj, base) = RefcBased::with_split();
     let id = obj.instance_id();
     dbg!(&id);
     dbg!(id.to_i64() as u64);
@@ -244,7 +244,7 @@ fn base_during_init_outside_init() {
     let mut obj = Based::new_alloc();
 
     expect_panic("as_init_gd() outside init() function", || {
-        let mut guard = obj.bind_mut();
+        let guard = obj.bind_mut();
         let _gd = guard.base.to_init_gd(); // Panics in Debug builds.
     });
 
@@ -472,7 +472,7 @@ impl RefcBased {
     fn with_split() -> (Gd<Self>, Gd<RefCounted>) {
         let mut moved_out = None;
 
-        let self_gd = Gd::from_init_fn(|mut base| {
+        let self_gd = Gd::from_init_fn(|base| {
             let gd = base.to_init_gd();
 
             base.to_init_gd(); // Immediately dropped.
