@@ -5,7 +5,7 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
-use crate::obj::{Gd, GodotClass};
+use crate::obj::{bounds, Gd, GodotClass};
 use crate::{classes, sys};
 use std::fmt::{Debug, Display, Formatter, Result as FmtResult};
 use std::mem::ManuallyDrop;
@@ -208,6 +208,12 @@ impl<T: GodotClass> Base<T> {
             self.is_initializing(),
             "Base::to_init_gd() can only be called during object initialization, inside I*::init() or Gd::from_init_fn()"
         );
+
+        // For manually-managed objects, regular clone is fine.
+        // Only static type matters, because this happens immediately after initialization, so T is both static and dynamic type.
+        if !<T::Memory as bounds::Memory>::IS_REF_COUNTED {
+            return Gd::clone(&self.obj);
+        }
 
         // let keeper = (*self.obj).clone();
         //*self.extra_strong_ref.borrow_mut() = Some(keeper.clone());
