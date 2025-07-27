@@ -111,7 +111,7 @@ fn base_during_init_refcounted_from_rust() -> TaskHandle {
     next_frame(move || assert_eq!(obj.get_reference_count(), 1, "eventual dec-ref happens"))
 }
 
-#[itest]
+#[itest(focus)]
 // #[itest]
 fn base_during_init_refcounted_complex() {
     // Instantiate with multiple Gd<T> references.
