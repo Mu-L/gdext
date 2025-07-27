@@ -112,7 +112,7 @@ impl<T: GodotClass> StorageRefCounted for InstanceStorage<T> {
             // If we have surplus references, we don't increment the ref count.
             //super::log_surplus_ref(self);
             eprintln!("! ! ! SURPLUS REF");
-            self.base.surplus_dec_ref2();
+            // self.base.surplus_dec_ref2();
             return;
         }
 
@@ -129,7 +129,7 @@ impl<T: GodotClass> StorageRefCounted for InstanceStorage<T> {
             eprintln!("+ + + SURPLUS REF downed");
 
             self.has_surplus_ref.set(false);
-            self.base.surplus_dec_ref2();
+            // self.base.surplus_dec_ref2();
         }
 
         super::log_dec_ref(self);

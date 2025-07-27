@@ -243,6 +243,11 @@ impl<T: GodotClass> Base<T> {
 
         // std::mem::forget((*self.obj).clone());
 
+        self.obj.raw.with_ref_counted(|refc| {
+            eprintln!(">   WRC: call_deferred unref {:?}", self.obj);
+            refc.call_deferred("unreference", &[]);
+        });
+
         (*self.obj).clone()
     }
 
@@ -292,6 +297,7 @@ impl<T: GodotClass> Base<T> {
         //*self.extra_strong_ref.borrow_mut() = None;
     }
 
+    /*
     pub(crate) fn surplus_dec_ref(&self) {
         self.obj.raw.with_ref_counted(|refc| {
             eprintln!(">   Surplus dec ref for {:?}", self.obj);
@@ -311,15 +317,15 @@ impl<T: GodotClass> Base<T> {
         // self.obj.raw.with_ref_counted(|refc| {
         eprintln!(">   Surplus dec ref for {:?}", self.obj);
         // refc.call_deferred("unreference", &[]);
-        
+
         let obj = self.obj.upcast_object_ref();
-        
+
         let obj = unsafe {  &mut *std::ptr::addr_of!(*obj).cast_mut() };
         obj.call_deferred("dekref", &[]);
-        
+
         eprintln!(">   Surplus decced ref for {:?}", self.obj);
         // })
-    }
+    }*/
 
     /// Returns a [`Gd`] referencing the base object, assuming the derived object is fully constructed.
     #[doc(hidden)]

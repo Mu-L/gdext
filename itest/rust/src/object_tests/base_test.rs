@@ -8,6 +8,7 @@
 use crate::framework::{expect_panic, itest};
 use godot::classes::ClassDb;
 use godot::prelude::*;
+use godot::task;
 
 #[itest(skip)]
 fn base_test_is_weak() {
@@ -23,7 +24,7 @@ fn base_instance_id() {
     obj.free();
 }
 
-// #[itest(focus)]
+// #[itest]
 #[itest]
 fn base_instance_id2() {
     {
@@ -191,19 +192,42 @@ fn base_during_init_refcounted_simple() {
 }
 
 // Tests that the auto-decrement of surplus references also works when instantiated through the engine.
-#[itest]
-fn base_during_init_refcounted_from_engine() {
+#[itest(focus, async)]
+fn base_during_init_refcounted_from_engine(ctx: &crate::framework::TestContext) -> godot::task::TaskHandle {
     let db = ClassDb::singleton();
     let obj = db.instantiate("RefcBased").to::<Gd<RefcBased>>();
 
     assert_eq!(
         obj.get_reference_count(),
-        1,
+        2,
         "no lingering references (engine init)"
     );
+
+    // await root.get_tree().physics_frame
+    let tree = ctx.scene_tree.get_tree().unwrap();
+    // println!("physics: {:?}", ctx.scene_tree);
+
+    let _handle = task::spawn(async move {
+        eprintln!("Await frame...");
+        let _: () = tree.signals().physics_frame().to_future().await;
+        eprintln!("Frame arrived!");
+
+        assert_eq!(
+            obj.get_reference_count(),
+            1,
+            "no lingering references (engine init)"
+        );
+    });
+
+    // assert_eq!(
+    //     obj.get_reference_count(),
+    //     1,
+    //     "no lingering references (engine init)"
+    // );
+    _handle
 }
 
-#[itest]
+#[itest(focus)]
 fn base_during_init_refcounted_from_rust() {
     let obj = RefcBased::new_gd();
     assert_eq!(
@@ -213,7 +237,7 @@ fn base_during_init_refcounted_from_rust() {
     );
 }
 
-#[itest(focus)]
+#[itest]
 // #[itest]
 fn base_during_init_refcounted_complex() {
     // Instantiate with multiple Gd<T> references.
@@ -474,9 +498,15 @@ impl IRefCounted for RefcBased {
 impl RefcBased {
     #[func]
     fn dekref(&mut self) {
-        eprintln!("RefcBased::dekref() - before: refc={}", self.base().get_reference_count());
+        eprintln!(
+            "RefcBased::dekref() - before: refc={}",
+            self.base().get_reference_count()
+        );
         self.base_mut().call("unreference", &[]);
-        eprintln!("RefcBased::dekref() - after: refc={}", self.base().get_reference_count());
+        eprintln!(
+            "RefcBased::dekref() - after: refc={}",
+            self.base().get_reference_count()
+        );
     }
 }
 

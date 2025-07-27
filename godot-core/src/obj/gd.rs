@@ -360,9 +360,9 @@ impl<T: GodotClass> Gd<T> {
     }
 
     /// Equivalent to [`upcast_mut::<Object>()`][Self::upcast_mut], but without bounds.
-    pub(crate) fn upcast_object_ref(&self) -> &classes::Object {
-        self.raw.as_object_ref()
-    }
+    // pub(crate) fn upcast_object_ref(&self) -> &classes::Object {
+    //     self.raw.as_object_ref()
+    // }
     
     /// Equivalent to [`upcast_mut::<Object>()`][Self::upcast_mut], but without bounds.
     pub(crate) fn upcast_object_mut(&mut self) -> &mut classes::Object {
