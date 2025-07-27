@@ -195,7 +195,7 @@ impl<T: GodotClass> RawGd<T> {
     ///
     /// # Panics
     /// If `self` does not inherit `RefCounted` or is null.
-    pub(crate) fn with_ref_counted<R>(&self, apply: impl Fn(&mut classes::RefCounted) -> R) -> R {
+    pub fn with_ref_counted<R>(&self, apply: impl Fn(&mut classes::RefCounted) -> R) -> R {
         // Note: this previously called Declarer::scoped_mut() - however, no need to go through bind() for changes in base RefCounted.
         // Any accesses to user objects (e.g. destruction if refc=0) would bind anyway.
         //

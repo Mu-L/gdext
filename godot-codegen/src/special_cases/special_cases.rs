@@ -391,7 +391,7 @@ pub fn is_method_private(class_or_builtin_ty: &TyName, godot_method_name: &str) 
         | ("Object", "to_string")
         | ("RefCounted", "init_ref")
         | ("RefCounted", "reference")
-        | ("RefCounted", "unreference")
+        // | ("RefCounted", "unreference")
         | ("Object", "notification")
 
         => true, _ => false

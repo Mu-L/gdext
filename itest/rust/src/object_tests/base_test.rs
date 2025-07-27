@@ -306,11 +306,24 @@ impl RefcBased {
             "RefcBased::dekref() - before: refc={}",
             self.base().get_reference_count()
         );
-        self.base_mut().call("unreference", &[]);
-        eprintln!(
-            "RefcBased::dekref() - after: refc={}",
-            self.base().get_reference_count()
-        );
+        //self.base_mut().call("unreference", &[]);
+
+        self.base.obj.raw.with_ref_counted(|refc| {
+            if refc.unreference() {
+                // FIXME we must destroy if this was last ref.
+                refc.call("free" , &[]);
+            }
+            eprintln!(
+                "RefcBased::dekref() - after: refc={}",
+                refc.get_reference_count()
+            );
+        });
+
+        // no base() + base_mut()
+        // eprintln!(
+        //     "RefcBased::dekref() - after: refc={}",
+        //     self.base().get_reference_count()
+        // );
     }
 
     pub fn with_split() -> (Gd<Self>, Gd<RefCounted>) {

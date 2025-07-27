@@ -111,9 +111,8 @@ fn base_during_init_refcounted_from_rust() -> TaskHandle {
     next_frame(move || assert_eq!(obj.get_reference_count(), 1, "eventual dec-ref happens"))
 }
 
-#[itest(focus)]
-// #[itest]
-fn base_during_init_refcounted_complex() {
+#[itest(async, focus)]
+fn base_during_init_refcounted_complex() -> TaskHandle {
     // Instantiate with multiple Gd<T> references.
     let (obj, base) = RefcBased::with_split();
     let id = obj.instance_id();
@@ -122,19 +121,21 @@ fn base_during_init_refcounted_complex() {
     dbg!(id.to_i64() as u64);
     dbg!(base.instance_id().to_i64() as u64);
 
-    // base.call("unreference", &[]);
-    // base.call("unreference", &[]);
-
     assert_eq!(obj.instance_id(), base.instance_id());
-    // assert_eq!(base.get_reference_count(), 2);
-    // assert_eq!(obj.get_reference_count(), 2);
+    assert_eq!(base.get_reference_count(), 3);
+    assert_eq!(obj.get_reference_count(), 3);
 
     drop(base);
-    // assert_eq!(obj.get_reference_count(), 1);
-    // assert_eq!(obj.get_reference_count(), 1);
+    assert_eq!(obj.get_reference_count(), 2);
+    assert_eq!(obj.get_reference_count(), 2);
     drop(obj);
 
-    // assert!(!id.lookup_validity(), "last drop destroyed the object");
+    // Not dead yet.
+    assert!(id.lookup_validity(), "object retained (dec-ref deferred)");
+
+    next_frame(move || {
+        //assert!(!id.lookup_validity(), "object destroyed eventually");
+    })
 }
 
 #[cfg(debug_assertions)]

@@ -66,7 +66,7 @@ pub struct Base<T: GodotClass> {
     // When triggered by Rust (Gd::drop on last strong ref), it's as follows:
     // 1.   Gd<T>  -- triggers InstanceStorage destruction
     // 2.
-    obj: ManuallyDrop<Gd<T>>,
+    pub obj: ManuallyDrop<Gd<T>>,
 
     extra_strong_ref: Rc<RefCell<Option<Gd<T>>>>,
 
@@ -244,8 +244,9 @@ impl<T: GodotClass> Base<T> {
         // std::mem::forget((*self.obj).clone());
 
         self.obj.raw.with_ref_counted(|refc| {
-            eprintln!(">   WRC: call_deferred unref {:?}", self.obj);
-            refc.call_deferred("unreference", &[]);
+            // eprintln!(">   WRC: call_deferred unref {:?}", self.obj);
+            // refc.call_deferred("unreference", &[]);
+            refc.call_deferred("dekref", &[]);
         });
 
         (*self.obj).clone()
