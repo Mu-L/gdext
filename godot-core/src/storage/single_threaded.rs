@@ -107,11 +107,12 @@ unsafe impl<T: GodotClass> Storage for InstanceStorage<T> {
 impl<T: GodotClass> StorageRefCounted for InstanceStorage<T> {
     fn on_inc_ref(&self) {
         if self.has_surplus_ref.get() {
+            self.has_surplus_ref.set(false);
+
             // If we have surplus references, we don't increment the ref count.
             //super::log_surplus_ref(self);
             eprintln!("! ! ! SURPLUS REF");
-            self.has_surplus_ref.set(false);
-            self.base.surplus_dec_ref();
+            self.base.surplus_dec_ref2();
             return;
         }
 
@@ -119,6 +120,18 @@ impl<T: GodotClass> StorageRefCounted for InstanceStorage<T> {
     }
 
     fn on_dec_ref(&self) {
+        // IMPORTANT: it is too late here to perform dec-ref operations on the Base (for "surplus" references).
+        // This callback is only invoked in the C++ condition `if (rc_val <= 1 /* higher is not relevant */)` -- see Godot ref_counted.cpp.
+        // The T <-> RefCounted hierarchical relation is usually already broken up at this point, and further dec-ref may bring the count
+        // down to 0.
+
+        if self.has_surplus_ref.get() {
+            eprintln!("+ + + SURPLUS REF downed");
+
+            self.has_surplus_ref.set(false);
+            self.base.surplus_dec_ref2();
+        }
+
         super::log_dec_ref(self);
     }
 }

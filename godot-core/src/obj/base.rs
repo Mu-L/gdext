@@ -294,8 +294,31 @@ impl<T: GodotClass> Base<T> {
 
     pub(crate) fn surplus_dec_ref(&self) {
         self.obj.raw.with_ref_counted(|refc| {
+            eprintln!(">   Surplus dec ref for {:?}", self.obj);
             refc.unreference();
+            eprintln!(">   Surplus decced ref for {:?}", self.obj);
         })
+    }
+
+    pub(crate) fn surplus_dec_ref2(&self) {
+        // self.obj.raw.with_ref_counted(|refc| {
+        //     eprintln!(">   Surplus dec ref for {:?}", self.obj);
+        //     // refc.call_deferred("unreference", &[]);
+        //     refc.call_deferred("dekref", &[]);
+        //     eprintln!(">   Surplus decced ref for {:?}", self.obj);
+        // })
+
+        // self.obj.raw.with_ref_counted(|refc| {
+        eprintln!(">   Surplus dec ref for {:?}", self.obj);
+        // refc.call_deferred("unreference", &[]);
+        
+        let obj = self.obj.upcast_object_ref();
+        
+        let obj = unsafe {  &mut *std::ptr::addr_of!(*obj).cast_mut() };
+        obj.call_deferred("dekref", &[]);
+        
+        eprintln!(">   Surplus decced ref for {:?}", self.obj);
+        // })
     }
 
     /// Returns a [`Gd`] referencing the base object, assuming the derived object is fully constructed.
