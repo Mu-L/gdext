@@ -363,12 +363,12 @@ impl<T: GodotClass> Gd<T> {
     // pub(crate) fn upcast_object_ref(&self) -> &classes::Object {
     //     self.raw.as_object_ref()
     // }
-    
+
     /// Equivalent to [`upcast_mut::<Object>()`][Self::upcast_mut], but without bounds.
     pub(crate) fn upcast_object_mut(&mut self) -> &mut classes::Object {
         self.raw.as_object_mut()
     }
-    
+
     /// **Upcast shared-ref:** access this object as a shared reference to a base class.
     ///
     /// This is semantically equivalent to multiple applications of [`Self::deref()`]. Not really useful on its own, but combined with
