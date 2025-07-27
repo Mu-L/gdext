@@ -9,6 +9,7 @@ use crate::framework::{expect_panic, itest, next_frame};
 use crate::object_tests::base_test::{Based, RefcBased};
 use godot::classes::ClassDb;
 use godot::prelude::*;
+use godot::task::TaskHandle;
 
 #[itest]
 fn base_during_init() {
@@ -93,34 +94,21 @@ fn base_during_init_refcounted_simple() {
 }
 
 // Tests that the auto-decrement of surplus references also works when instantiated through the engine.
-#[itest(focus, async)]
-fn base_during_init_refcounted_from_engine() -> godot::task::TaskHandle {
+#[itest(async)]
+fn base_during_init_refcounted_from_engine() -> TaskHandle {
     let db = ClassDb::singleton();
     let obj = db.instantiate("RefcBased").to::<Gd<RefcBased>>();
 
-    assert_eq!(
-        obj.get_reference_count(),
-        2,
-        "no lingering references (engine init)"
-    );
-
-    next_frame(move || {
-        assert_eq!(
-            obj.get_reference_count(),
-            1,
-            "no lingering references (engine init)"
-        );
-    })
+    assert_eq!(obj.get_reference_count(), 2);
+    next_frame(move || assert_eq!(obj.get_reference_count(), 1, "eventual dec-ref happens"))
 }
 
-#[itest(focus)]
-fn base_during_init_refcounted_from_rust() {
+#[itest(async)]
+fn base_during_init_refcounted_from_rust() -> TaskHandle {
     let obj = RefcBased::new_gd();
-    assert_eq!(
-        obj.get_reference_count(),
-        1,
-        "no lingering references (Rust init)"
-    );
+
+    assert_eq!(obj.get_reference_count(), 2);
+    next_frame(move || assert_eq!(obj.get_reference_count(), 1, "eventual dec-ref happens"))
 }
 
 #[itest]
