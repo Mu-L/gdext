@@ -220,6 +220,7 @@ fn base_during_init_refcounted_complex() {
     let (obj, base) = RefcBased::with_split();
     let id = obj.instance_id();
     dbg!(&id);
+    dbg!(&obj);
     dbg!(id.to_i64() as u64);
     dbg!(base.instance_id().to_i64() as u64);
 
@@ -359,6 +360,7 @@ fn create_object_with_extracted_base() -> (Gd<Baseless>, Base<Node2D>) {
 }
 
 // ----------------------------------------------------------------------------------------------------------------------------------------------
+
 #[derive(GodotClass)]
 pub struct RefBase {
     pub base: Base<RefCounted>,
@@ -383,7 +385,7 @@ mod renamed_bases {
     type Base<T> = T;
 
     #[derive(GodotClass)]
-    #[class( base = Node2D)]
+    #[class(base = Node2D)]
     pub struct Based {
         #[hint(base)]
         pub base: Super<Node2D>, // de-facto: Base<Node2D>.
@@ -473,20 +475,26 @@ impl RefcBased {
         let mut moved_out = None;
 
         let self_gd = Gd::from_init_fn(|base| {
-            let gd = base.to_init_gd();
+            // let gd = base.to_init_gd();
 
-            base.to_init_gd(); // Immediately dropped.
+            // base.to_init_gd(); // Immediately dropped.
 
-            let _local_copy = base.to_init_gd(); // At end of scope.
+            // let _local_copy = base.to_init_gd(); // At end of scope.
             moved_out = Some(base.to_init_gd()); // Moved out.
 
-            drop(gd);
+            // drop(gd);
 
             // let refc: &mut Gd<RefCounted> = base.as_init_gd();
             // let refc = refc.get_reference_count();
             // println!("Inside init(): refc={}", refc);
+
+            dbg!(&moved_out);
+            dbg!(&base);
             Self { base }
         });
+
+        dbg!(&moved_out);
+        dbg!(&self_gd);
 
         (self_gd, moved_out.unwrap())
     }
